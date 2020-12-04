@@ -1,0 +1,24 @@
+name: Mirror v4l-utils from linuxtv
+on:
+  schedule:
+  - cron: "48 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: cloning v4l-utils
+      run:  git clone --mirror "git://linuxtv.org/v4l-utils.git"
+
+    - name: push to github
+      env:
+        DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=${GITHUB_WORKSPACE}/known_hosts -o BatchMode=yes"
+      run: |
+        eval "$(ssh-agent -s)"
+        ssh-add - <<< "${DEPLOY_KEY}"
+        #ssh -T git@github.com
+        cd "v4l-utils.git"
+        git push --all "git@github.com:gjasny/v4l-utils.git"
+        git push --tags "git@github.com:gjasny/v4l-utils.git"
